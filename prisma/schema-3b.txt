@@ -1,0 +1,32 @@
+model ExtractionRow {
+  id              String   @id @default(cuid())
+  runId           String
+  run             ExtractionRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceFileId    String?
+  sourceFile      FileAsset? @relation(fields: [sourceFileId], references: [id])
+  
+  tagRaw          String
+  tagNormalized   String
+  category        String
+  level           String?
+  location        String?
+  qty             Int?
+  airflowCfm      Int?
+  gpm             Float?
+  voltage         Int?
+  phase           Int?
+  specSection     String?
+  confidence      Float
+  status          String   // "PENDING"|"APPROVED"|"REJECTED"|"MERGED"
+  mergedIntoRowId String?
+  duplicateGroupId String?
+  
+  // Phase 3B Source Traceability
+  pageNumber      Int?
+  boundingBox     String?  // JSON representation of coordinates or table ID
+  snippetUrl      String?  // Optional path to visual snip of the table row for review
+
+  createdAt       DateTime @default(now())
+}

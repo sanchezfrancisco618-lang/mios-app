@@ -1,0 +1,346 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id              String      @id @default(cuid())
+  name            String
+  ahj             String
+  mode            String      // "Existing" | "New"
+  scope_hvac      Boolean     @default(false)
+  scope_plumbing  Boolean     @default(false)
+  scope_controls  Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  leadTimeOverrides ProjectLeadTimeOverride[]
+  fileAssets        FileAsset[]
+  extractionRuns    ExtractionRun[]
+  extractionRows    ExtractionRow[]
+  equipment         Equipment[]
+  equipmentRevisions EquipmentRevision[]
+  risks             Risk[]
+  inspections       Inspection[]
+  eventLogs         EventLog[]
+  scheduleTasks     ScheduleTask[]
+  submittals        Submittal[]
+  checklistItems    ChecklistItem[]
+  rfis              Rfi[]
+  changeOrders      ChangeOrder[]
+}
+
+model ProjectLeadTimeOverride {
+  id            String   @id @default(cuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  category      String   // "RTU", "AHU", "ERU", "PUMP", "VALVE", "ROOF_DRAIN", "CONTROLS", "OTHER"
+  leadTimeWeeks Int
+}
+
+model FileAsset {
+  id            String   @id @default(cuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  filename      String
+  fileType      String   // "PDF"|"XLSX"|"DOCX"|"OTHER"
+  discipline    String   // "HVAC"|"PLUMBING"|"CONTROLS"|"GENERAL"|"UNKNOWN"
+  revisionLabel String   @default("Rev 0")
+  source        String   @default("Manual Upload")
+  url           String   @default("")
+  uploadedAt    DateTime @default(now())
+  sha256        String?
+  extractionRows ExtractionRow[]
+  
+  // Try not to enforce strict DB level unique per sha256 since dev environments might upload same file multiple times with different names to test.
+}
+
+model ExtractionRun {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status      String   // "PENDING"|"RUNNING"|"COMPLETED"|"FAILED"
+  createdAt   DateTime @default(now())
+  completedAt DateTime?
+  summary     String?  // json (counts)
+  rows        ExtractionRow[]
+}
+
+model ExtractionRow {
+  id              String   @id @default(cuid())
+  runId           String
+  run             ExtractionRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceFileId    String?
+  sourceFile      FileAsset? @relation(fields: [sourceFileId], references: [id])
+  
+  tagRaw          String
+  tagNormalized   String
+  category        String
+  level           String?
+  location        String?
+  qty             Int?
+  airflowCfm      Int?
+  gpm             Float?
+  voltage         Int?
+  phase           Int?
+  specSection     String?
+  confidence      Float
+  status          String   // "PENDING"|"APPROVED"|"REJECTED"|"MERGED"
+  mergedIntoRowId String?
+  duplicateGroupId String?
+  
+  // Phase 3B Source Traceability
+  pageNumber      Int?
+  boundingBox     String?  // JSON representation of coordinates or table ID
+  snippetUrl      String?  // Optional path to visual snip of the table row for review
+
+  createdAt       DateTime @default(now())
+}
+
+model Equipment {
+  id                String   @id @default(cuid())
+  projectId         String
+  project           Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tagNormalized     String
+  category          String
+  trade             String   // "HVAC"|"PLUMBING"|"CONTROLS"
+  level             String?
+  location          String?
+  qty               Int?     @default(1)
+  controlsRequired  Boolean  @default(false)
+
+  // Phase 5 Procurement Engine v1
+  procurementStatus String   // "NOT_RELEASED"|"RELEASED"|"ORDERED"|"FAB"|"SHIPPED"|"DELIVERED"|"INSTALLED"|"STARTED_UP"|"TABBED"|"TURNED_OVER"
+  vendor            String?
+  poNumber          String?
+  shipStatus        String?
+  neededOnSite      DateTime?
+  neededOnSiteSource String? // "SCHEDULE" | "MANUAL" | "RULE"
+  leadTimeWeeks     Int      @default(0)
+  requiredRelease   DateTime?
+  
+  // Relations mapped below via constraints
+  activeRevisionId  String?
+  activeRevision    EquipmentRevision?  @relation(name: "ActiveEquipmentRevision", fields: [activeRevisionId], references: [id])
+  revisions         EquipmentRevision[] @relation(name: "EquipmentRevisionHistory")
+  scheduleTasks     ScheduleTask[]
+  risks             Risk[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([projectId, tagNormalized])
+}
+
+// Phase 6 Schedule + Dependencies Integration
+model ScheduleTask {
+  id              String   @id @default(cuid())
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  taskName        String
+  taskCode        String?
+  startDate       DateTime
+  endDate         DateTime
+  status          String   // "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED"
+  
+  // Link to Equipment
+  equipmentId     String?
+  equipment       Equipment? @relation(fields: [equipmentId], references: [id])
+  
+  // Phase 6B: Controls predecessors logic
+  isControlsMilestone Boolean @default(false)
+  controlGateType String?   // "LOTO" | "BAS_INTEGRATION" | "CLOSEOUT"
+  
+  predecessors    TaskDependency[] @relation("SuccessorTasks")
+  successors      TaskDependency[] @relation("PredecessorTasks")
+
+  createdAt       DateTime @default(now())
+}
+
+model TaskDependency {
+  id              String   @id @default(cuid())
+  predecessorId   String
+  predecessor     ScheduleTask @relation("PredecessorTasks", fields: [predecessorId], references: [id], onDelete: Cascade)
+  successorId     String
+  successor       ScheduleTask @relation("SuccessorTasks", fields: [successorId], references: [id], onDelete: Cascade)
+  type            String   // "FS" (Finish-to-Start)
+  lagDays         Int      @default(0)
+}
+
+// Phase 7 Submittal Compliance Engine
+model Submittal {
+  id              String   @id @default(cuid())
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  number          String   
+  title           String
+  trade           String
+  status          String   // "DRAFT" | "SUBMITTED" | "APPROVED" | "REVISE_RESUBMIT"
+  revision        String   @default("0")
+  
+  // High-level analysis flags
+  isComplete      Boolean  @default(false)
+  
+  requirements    Requirement[]
+  deviations      SubmittalDeviation[]
+
+  submittedOn     DateTime?
+  returnedOn      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Requirement {
+  id              String   @id @default(cuid())
+  submittalId     String
+  submittal       Submittal @relation(fields: [submittalId], references: [id], onDelete: Cascade)
+  
+  type            String   // "SPECIFICATION" | "SCHEDULE" | "DRAWING_NOTE"
+  description     String
+  sourceRef       String?  // Example: "Spec 23 74 13 - 2.1.A"
+  
+  // Is it met?
+  isCompliant     Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+}
+
+model SubmittalDeviation {
+  id              String   @id @default(cuid())
+  submittalId     String
+  submittal       Submittal @relation(fields: [submittalId], references: [id], onDelete: Cascade)
+  
+  description     String
+  riskLevel       String   // "LOW" | "MEDIUM" | "HIGH"
+  status          String   // "OPEN" | "ACCEPTED" | "REJECTED"
+  
+  createdAt       DateTime @default(now())
+}
+
+// Phase 8 Inspections/Permits + AHJ Logic
+model Inspection {
+  id              String   @id @default(cuid())
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  name            String
+  ahj             String
+  trade           String
+  windowStart     DateTime
+  windowEnd       DateTime
+  status          String   // "NOT_REQUESTED" | "REQUESTED" | "SCHEDULED" | "PASSED" | "FAILED"
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ChecklistItem {
+  id              String   @id @default(cuid())
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  title           String
+  type            String   // "PRE_INSPECTION" | "COMMISSIONING"
+  isComplete      Boolean  @default(false)
+  completedAt     DateTime?
+  
+  createdAt       DateTime @default(now())
+}
+
+// Phase 9 Communications Integrations
+model Rfi {
+  id              String   @id @default(cuid())
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  number          String
+  subject         String
+  question        String
+  answer          String?
+  status          String   // "DRAFT" | "OPEN" | "CLOSED"
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model EventLog {
+  id              String   @id @default(cuid())
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  actor           String
+  eventType       String
+  entityType      String
+  entityId        String
+  payload         String
+  
+  createdAt       DateTime @default(now())
+}
+
+// Phase 10 Financial Variance Modeler
+model ChangeOrder {
+  id              String   @id @default(cuid())
+  projectId       String
+  project         Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  title           String
+  description     String
+  amount          Float
+  status          String   // "PROPOSED" | "APPROVED" | "REJECTED"
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model EquipmentRevision {
+  id                   String   @id @default(cuid())
+  projectId            String
+  project              Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  equipmentId          String
+  equipment            Equipment @relation(name: "EquipmentRevisionHistory", fields: [equipmentId], references: [id], onDelete: Cascade)
+  
+  supersedesRevisionId String?
+  sourceRunId          String?
+  
+  // Moved from Equipment
+  airflowCfm           Int?
+  gpm                  Float?
+  voltage              Int?
+  phase                Int?
+  specSection          String?
+  source               String   @default("EXTRACTION") // "EXTRACTION", "MANUAL"
+
+  snapshot             String   // json
+  
+  // Reverse relation
+  activeForEquipment   Equipment[] @relation(name: "ActiveEquipmentRevision")
+  
+  createdAt            DateTime @default(now())
+}
+
+model Risk {
+  id                String   @id @default(cuid())
+  projectId         String
+  project           Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  severity          String   // "LOW"|"MED"|"HIGH"
+  category          String   // "PROCUREMENT"|"INSPECTION"|"CONTROLS"|"COORDINATION"|"OTHER"
+  trigger           String
+  status            String   // "OPEN"|"MITIGATING"|"CLOSED"
+  owner             String?
+  equipmentId       String?
+  equipment         Equipment? @relation(fields: [equipmentId], references: [id])
+  linkedTaskId      String?
+  linkedSubmittalId String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
