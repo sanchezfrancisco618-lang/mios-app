@@ -12,7 +12,7 @@ export function OperationalIntelligencePanel() {
     if (!task) return null;
 
     const eq = equipment.find(e => e.tag === task.equipmentTag);
-    const taskRisks = risks.filter(r => r.linkedTaskId === task.id || (eq && r.linkedEquipmentId === eq.id));
+    const taskRisks = risks.filter(r => r.linkedTaskId === task.id || (eq && r.equipmentId === eq.id));
     const linkedInspections = inspections.filter(i => i.linkedTaskIds.includes(task.id));
     const linkedSubmittals = eq ? submittals.filter(s => s.linkedEquipmentIds.includes(eq.id)) : [];
 

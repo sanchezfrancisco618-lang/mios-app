@@ -79,7 +79,7 @@ export const MOCK_INSPECTIONS: Inspection[] = [
 ];
 
 export const MOCK_RISKS: Risk[] = [
-    { id: "RSK-1", severity: "High", category: "Procurement", trigger: "Missed release date", status: "Active", owner: "J. Doe", linkedEquipmentId: "EQ-1", linkedTaskId: "T-3" },
+    { id: "RSK-1", severity: "High", category: "Procurement", trigger: "Missed release date", status: "Active", owner: "J. Doe", equipmentId: "EQ-1", linkedTaskId: "T-3" },
     { id: "RSK-2", severity: "Medium", category: "Permitting", trigger: "Inspection in 10 days not requested", status: "Active", owner: "A. Smith" },
-    { id: "RSK-3", severity: "High", category: "Controls", trigger: "Controls predecessor missing", status: "Active", owner: "C. Jones", linkedEquipmentId: "EQ-1" },
+    { id: "RSK-3", severity: "High", category: "Controls", trigger: "Controls predecessor missing", status: "Active", owner: "C. Jones", equipmentId: "EQ-1" },
 ];
