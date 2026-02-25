@@ -10,11 +10,13 @@
         "postinstall": "prisma generate"
     },
     "dependencies": {
+        "@ai-sdk/google": "^3.0.31",
         "@prisma/client": "^5.10.2",
         "@radix-ui/react-dialog": "^1.0.5",
         "@radix-ui/react-slot": "^1.0.2",
         "@radix-ui/react-tabs": "^1.0.4",
         "@tanstack/react-table": "^8.11.8",
+        "ai": "^6.0.99",
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.1.0",
         "date-fns": "^3.3.1",
@@ -25,7 +27,7 @@
         "react-dom": "^18",
         "tailwind-merge": "^2.2.1",
         "tailwindcss-animate": "^1.0.7",
-        "zod": "^3.22.4",
+        "zod": "^3.25.76",
         "zustand": "^4.5.0"
     },
     "devDependencies": {

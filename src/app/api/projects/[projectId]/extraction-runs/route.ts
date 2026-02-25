@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/server/db';
-import { mockExtractor } from '@/server/services/mockExtractor';
+import { geminiExtractor } from '@/server/services/geminiExtractor';
 
 export async function POST(req: Request, { params }: { params: { projectId: string } }) {
     // simulate extracting from latest files
@@ -14,8 +14,8 @@ export async function POST(req: Request, { params }: { params: { projectId: stri
         }
     });
 
-    // fire and forget mock extractor (or await it for simplicity)
-    await mockExtractor(run.id, params.projectId, fileIds);
+    // Fire and forget the Gemini extractor so it doesn't block the API response
+    geminiExtractor(run.id, params.projectId, fileIds).catch(console.error);
 
     return NextResponse.json(run, { status: 201 });
 }

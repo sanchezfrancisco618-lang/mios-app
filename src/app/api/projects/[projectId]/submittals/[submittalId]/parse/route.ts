@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/server/db';
-import { mockSubmittalParser } from '@/server/services/mockSubmittalParser';
+import { geminiSubmittalParser } from '@/server/services/geminiSubmittalParser';
 import { createEventLog } from '@/server/services/dbLogic';
 
 export async function POST(req: Request, { params }: { params: { projectId: string, submittalId: string } }) {
@@ -10,8 +10,8 @@ export async function POST(req: Request, { params }: { params: { projectId: stri
 
     if (!submittal) return NextResponse.json({ message: "Not found" }, { status: 404 });
 
-    // Call the mock parser to populate Requirements and Deviations
-    const results = await mockSubmittalParser(params.submittalId);
+    // Call the real Google Gemini parser to analyze the submittal
+    const results = await geminiSubmittalParser(params.submittalId);
 
     await createEventLog(params.projectId, "system", "SUBMITTAL_PARSED_PHASE7", "Submittal", params.submittalId, results);
 
