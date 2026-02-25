@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
+import { MobileNav } from "./MobileNav";
 import { ProjectStrip } from "./ProjectStrip";
 import { useAppStore } from "@/lib/store";
 import { Loader2 } from "lucide-react";
@@ -35,10 +36,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
                 <Topbar />
                 <ProjectStrip />
-                <main className="flex-1 overflow-auto bg-background-dark/50">
+                <main className="flex-1 overflow-auto bg-background-dark/50 pb-16 md:pb-0">
                     {children}
                 </main>
             </div>
+            <MobileNav />
         </div>
     );
 }

@@ -11,12 +11,14 @@ export default function RfisPage() {
 
     return (
         <div className="flex flex-col h-full w-full bg-background-dark p-6 space-y-6">
-            <div className="shrink-0 flex items-center justify-between">
+            <div className="shrink-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-extrabold tracking-tight text-white mb-1">Requests for Information (RFIs)</h1>
+                    <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-white mb-1">Requests for Information (RFIs)</h1>
                     <p className="text-sm text-slate-400">Manage, generate, and auto-verify design queries.</p>
                 </div>
-                <ExportMenu dataName="RFIs Log" />
+                <div className="self-start md:self-auto">
+                    <ExportMenu dataName="RFIs Log" />
+                </div>
             </div>
             <div className="flex-1 overflow-hidden">
                 <DocumentUploadPanel documentType="rfis" />

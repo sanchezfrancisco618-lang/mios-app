@@ -4,7 +4,12 @@ import { useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { UploadCloud, FileImage, Search, Zap, ScanLine, Layers, CheckCircle2, ChevronLeft, ZoomIn, ZoomOut, Hand, MousePointer2, Type, Highlighter, Ruler, Hash, Square, Circle } from "lucide-react";
 import { DocumentUploadPanel } from "@/components/shared/DocumentUploadPanel";
-import { PdfViewerCanvas } from "@/components/shared/PdfViewerCanvas";
+import dynamic from "next/dynamic";
+
+const PdfViewerCanvas = dynamic(
+    () => import("@/components/shared/PdfViewerCanvas").then((mod) => mod.PdfViewerCanvas),
+    { ssr: false, loading: () => <div className="flex-[3] relative bg-black flex items-center justify-center text-slate-400">Loading Canvas...</div> }
+);
 import { ExportMenu } from "@/components/shared/ExportMenu";
 
 type TradeTab = "all" | "architectural" | "mechanical" | "plumbing" | "electrical";

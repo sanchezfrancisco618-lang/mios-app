@@ -77,11 +77,11 @@ export default function SubmittalsPage() {
     return (
         <div className="p-6 space-y-6 h-full flex flex-col">
             <div className="flex justify-between items-center shrink-0">
-                <h1 className="text-2xl font-bold tracking-tight">Submittals Log</h1>
-                <div className="flex items-center gap-3">
+                <h1 className="text-xl md:text-2xl font-bold tracking-tight">Submittals Log</h1>
+                <div className="flex items-center gap-2 md:gap-3">
                     <ExportMenu dataName="Submittals List" />
-                    <Button onClick={handleCreateSubmittal} className="bg-primary hover:bg-primary/90 text-white font-bold h-9 px-4 gap-2 border-primary shadow-[0_0_15px_rgba(37,89,244,0.3)]">
-                        <Plus className="h-4 w-4" /> Create Submittal
+                    <Button onClick={handleCreateSubmittal} className="bg-primary hover:bg-primary/90 text-white font-bold h-9 px-3 md:px-4 gap-2 border-primary shadow-[0_0_15px_rgba(37,89,244,0.3)]">
+                        <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Create Submittal</span>
                     </Button>
                 </div>
             </div>
@@ -94,9 +94,9 @@ export default function SubmittalsPage() {
                                 <TableHead>Submittal</TableHead>
                                 <TableHead>Trade</TableHead>
                                 <TableHead>Status</TableHead>
-                                <TableHead>Rev</TableHead>
-                                <TableHead>Linked Equipment</TableHead>
-                                <TableHead className="text-center">Deviations</TableHead>
+                                <TableHead className="hidden sm:table-cell">Rev</TableHead>
+                                <TableHead className="hidden md:table-cell">Linked Equipment</TableHead>
+                                <TableHead className="hidden md:table-cell text-center">Deviations</TableHead>
                                 <TableHead className="text-right">Compliance AI</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -129,8 +129,8 @@ export default function SubmittalsPage() {
                                                 <option className="bg-slate-900 text-red-500" value="Rejected">Rejected</option>
                                             </select>
                                         </TableCell>
-                                        <TableCell>{sub.revision || sub.rev || "0"}</TableCell>
-                                        <TableCell>
+                                        <TableCell className="hidden sm:table-cell">{sub.revision || sub.rev || "0"}</TableCell>
+                                        <TableCell className="hidden md:table-cell">
                                             <div className="flex flex-wrap gap-1">
                                                 {linkedEq.length > 0 ? linkedEq.map(eq => (
                                                     <span
@@ -143,7 +143,7 @@ export default function SubmittalsPage() {
                                                 )) : <span className="text-muted-foreground">-</span>}
                                             </div>
                                         </TableCell>
-                                        <TableCell className="text-center">
+                                        <TableCell className="text-center hidden md:table-cell">
                                             {sub.deviations?.length > 0 ? (
                                                 <span className="font-bold text-destructive bg-destructive/10 px-2 py-0.5 rounded-full text-xs border border-destructive/20">{sub.deviations.length}</span>
                                             ) : <span className="text-muted-foreground">-</span>}
@@ -154,10 +154,11 @@ export default function SubmittalsPage() {
                                                     variant="outline"
                                                     onClick={() => runAnalysis(sub.id)}
                                                     disabled={analyzingId === sub.id}
-                                                    className="gap-2 h-9 px-3 text-xs"
+                                                    className="gap-2 h-9 px-2 md:px-3 text-[10px] md:text-xs"
                                                 >
                                                     <FileSearch className="h-4 w-4" />
-                                                    {analyzingId === sub.id ? "Analyzing..." : "Review Compliance"}
+                                                    <span className="hidden sm:inline">{analyzingId === sub.id ? "Analyzing..." : "Review Compliance"}</span>
+                                                    <span className="sm:hidden">{analyzingId === sub.id ? "..." : "AI"}</span>
                                                 </Button>
                                                 <Button
                                                     variant="ghost"
@@ -193,7 +194,7 @@ export default function SubmittalsPage() {
                             <Button variant="ghost" onClick={() => setComplianceData(null)} className="h-9 px-3"><X className="h-5 w-5" /></Button>
                         </div>
 
-                        <div className="flex-1 overflow-auto p-6 flex gap-6">
+                        <div className="flex-1 overflow-auto p-4 md:p-6 flex flex-col md:flex-row gap-6">
                             {/* Requirements List side */}
                             <div className="flex-1 space-y-4">
                                 <h3 className="text-md font-semibold mb-4 text-muted-foreground border-b border-border pb-2">Identified Requirements</h3>

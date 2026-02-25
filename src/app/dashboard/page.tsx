@@ -28,16 +28,16 @@ export default function Dashboard() {
 
                 {/* Horizontal Key Metrics */}
                 <section>
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center justify-between mb-4 mt-2">
                         <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">Project Overview</h3>
                         <span className="text-xs font-semibold text-primary cursor-pointer hover:underline">Full Report</span>
                     </div>
 
-                    <div className="flex gap-4 overflow-x-auto pb-4 -mx-6 px-6 no-scrollbar snap-x cursor-grab active:cursor-grabbing">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         {/* Metric Card 1: Submittals */}
                         <div
                             onClick={() => router.push('/submittals')}
-                            className="min-w-[200px] sm:flex-1 snap-start flex flex-col justify-between p-5 rounded-2xl glass-primary relative overflow-hidden transition-transform hover:scale-[1.02] cursor-pointer"
+                            className="flex flex-col justify-between p-5 rounded-2xl glass-primary relative overflow-hidden transition-transform hover:scale-[1.02] cursor-pointer min-h-[140px]"
                         >
                             <div className="absolute -top-4 -right-4 size-24 bg-primary/10 rounded-full blur-2xl pointer-events-none"></div>
                             <span className="material-symbols-outlined text-primary mb-6">description</span>
@@ -54,7 +54,7 @@ export default function Dashboard() {
                         {/* Metric Card 2: Equipment */}
                         <div
                             onClick={() => router.push('/schedule')}
-                            className="min-w-[200px] sm:flex-1 snap-start flex flex-col justify-between p-5 rounded-2xl glass relative overflow-hidden transition-transform hover:scale-[1.02] cursor-pointer"
+                            className="flex flex-col justify-between p-5 rounded-2xl glass relative overflow-hidden transition-transform hover:scale-[1.02] cursor-pointer min-h-[140px]"
                         >
                             <span className="material-symbols-outlined text-accent-teal mb-6">local_shipping</span>
                             <div>
@@ -69,7 +69,7 @@ export default function Dashboard() {
                         {/* Metric Card 3: Risks */}
                         <div
                             onClick={() => router.push('/risks')}
-                            className="min-w-[200px] sm:flex-1 snap-start flex flex-col justify-between p-5 rounded-2xl glass relative overflow-hidden border border-red-500/20 transition-transform hover:scale-[1.02] cursor-pointer"
+                            className="flex flex-col justify-between p-5 rounded-2xl glass relative overflow-hidden border border-red-500/20 transition-transform hover:scale-[1.02] cursor-pointer min-h-[140px]"
                         >
                             <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent pointer-events-none"></div>
                             <span className="material-symbols-outlined text-red-400 mb-6">warning</span>
@@ -215,7 +215,7 @@ export default function Dashboard() {
             </main>
 
             {/* Floating Action Button for Submittals */}
-            <div className="fixed bottom-8 right-6 z-40">
+            <div className="fixed bottom-20 md:bottom-8 right-6 z-40">
                 <button onClick={() => router.push('/submittals')} className="flex size-14 items-center justify-center rounded-2xl bg-primary text-white shadow-[0_10px_25px_-5px_rgba(37,89,244,0.5)] hover:shadow-[0_15px_30px_-5px_rgba(37,89,244,0.6)] hover:-translate-y-1 active:scale-95 transition-all">
                     <span className="material-symbols-outlined text-3xl">add</span>
                 </button>

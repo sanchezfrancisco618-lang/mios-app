@@ -25,17 +25,17 @@ export function ProcurementTable() {
                 <TableHeader className="sticky top-0 bg-muted/95 backdrop-blur z-10 border-b border-border shadow-sm">
                     <TableRow>
                         <TableHead className="w-24">Equipment</TableHead>
-                        <TableHead>Category</TableHead>
+                        <TableHead className="hidden md:table-cell">Category</TableHead>
                         <TableHead className="w-16">Qty</TableHead>
-                        <TableHead className="w-32">Needed On Site</TableHead>
-                        <TableHead className="w-32">Lead Time</TableHead>
-                        <TableHead className="w-32">Req. Release</TableHead>
+                        <TableHead className="w-32 hidden sm:table-cell">Needed On Site</TableHead>
+                        <TableHead className="w-32 hidden md:table-cell">Lead Time</TableHead>
+                        <TableHead className="w-32 hidden md:table-cell">Req. Release</TableHead>
                         <TableHead>Vendor</TableHead>
-                        <TableHead>PO #</TableHead>
+                        <TableHead className="hidden lg:table-cell">PO #</TableHead>
                         <TableHead>Release Status</TableHead>
-                        <TableHead>Linked Submittal</TableHead>
-                        <TableHead>Install Task</TableHead>
-                        <TableHead className="w-16 text-center">Controls</TableHead>
+                        <TableHead className="hidden xl:table-cell">Linked Submittal</TableHead>
+                        <TableHead className="hidden lg:table-cell">Install Task</TableHead>
+                        <TableHead className="w-16 text-center hidden xl:table-cell">Controls</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -48,10 +48,10 @@ export function ProcurementTable() {
                                 onClick={() => openEquipment(eq.id)}
                             >
                                 <TableCell className="font-semibold text-primary">{eq.tag}</TableCell>
-                                <TableCell className="text-muted-foreground">{eq.category}</TableCell>
+                                <TableCell className="text-muted-foreground hidden md:table-cell">{eq.category}</TableCell>
                                 <TableCell>{eq.procurement.qty || 1}</TableCell>
-                                <TableCell className="font-mono text-xs">{eq.procurement.neededOnSite || "TBD"}</TableCell>
-                                <TableCell>
+                                <TableCell className="font-mono text-xs hidden sm:table-cell">{eq.procurement.neededOnSite || "TBD"}</TableCell>
+                                <TableCell className="hidden md:table-cell">
                                     <select
                                         title="Lead Time"
                                         onClick={(e) => e.stopPropagation()}
@@ -68,13 +68,13 @@ export function ProcurementTable() {
                                         <option value={20}>20 Weeks</option>
                                     </select>
                                 </TableCell>
-                                <TableCell className={`font-mono text-xs font-bold ${isMissed ? 'text-destructive' : ''}`}>
+                                <TableCell className={`font-mono text-xs font-bold hidden md:table-cell ${isMissed ? 'text-destructive' : ''}`}>
                                     {eq.procurement.requiredRelease || "N/A"}
                                 </TableCell>
                                 <TableCell className="text-sm">
                                     {eq.procurement.vendor || <span className="text-muted-foreground italic">TBD</span>}
                                 </TableCell>
-                                <TableCell className="text-sm font-mono">
+                                <TableCell className="text-sm font-mono hidden lg:table-cell">
                                     {eq.procurement.poNumber || <span className="text-muted-foreground italic">Pending</span>}
                                 </TableCell>
                                 <TableCell>
@@ -82,7 +82,7 @@ export function ProcurementTable() {
                                         title="Release Status"
                                         onClick={(e) => e.stopPropagation()}
                                         onChange={(e) => handleStatusChange(e, eq.id)}
-                                        className={`border border-border rounded px-2 py-1 text-xs font-bold w-32 focus:outline-none focus:ring-1 focus:ring-primary ${isMissed ? 'bg-destructive/20 text-destructive' : 'bg-background text-foreground'}`}
+                                        className={`border border-border rounded px-1 md:px-2 py-1 text-[10px] md:text-xs font-bold w-24 md:w-32 focus:outline-none focus:ring-1 focus:ring-primary ${isMissed ? 'bg-destructive/20 text-destructive' : 'bg-background text-foreground'}`}
                                         value={eq.procurement.status}
                                     >
                                         <option value="NOT_RELEASED">Not Released</option>
@@ -97,19 +97,19 @@ export function ProcurementTable() {
                                         <option value="TURNED_OVER">Turned Over</option>
                                     </select>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="hidden xl:table-cell">
                                     {eq.linkedIds.submittals.length > 0 ? (
                                         <Badge variant="outline" className="bg-background">{`SUB-${eq.linkedIds.submittals[0]}`}</Badge>
                                     ) : <span className="text-muted-foreground">-</span>}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="hidden lg:table-cell">
                                     {eq.linkedIds.scheduleTasks.length > 0 ? (
-                                        <span className="text-xs border border-border bg-background px-1.5 py-0.5 rounded cursor-pointer hover:bg-muted">
+                                        <span className="text-[10px] md:text-xs border border-border bg-background px-1.5 py-0.5 rounded cursor-pointer hover:bg-muted">
                                             Task {eq.linkedIds.scheduleTasks[0]}
                                         </span>
                                     ) : <span className="text-muted-foreground">-</span>}
                                 </TableCell>
-                                <TableCell className="text-center">
+                                <TableCell className="text-center hidden xl:table-cell">
                                     {eq.controls ? <Settings2 className="h-4 w-4 text-blue-500 mx-auto" /> : <span className="text-muted-foreground">-</span>}
                                 </TableCell>
                             </TableRow>

@@ -29,7 +29,8 @@ export function Topbar() {
                     className="relative font-bold text-xs bg-white/5 px-3 py-1.5 rounded-md cursor-pointer border border-white/10 text-slate-200 hover:bg-white/10 transition-colors"
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 >
-                    {project ? project.name : "Loading..."} <span className="text-slate-500 ml-2">▼</span>
+                    <span className="truncate max-w-[100px] md:max-w-[200px] inline-block align-bottom">{project ? project.name : "Loading..."}</span>
+                    <span className="text-slate-500 ml-1 md:ml-2">▼</span>
 
                     {isDropdownOpen && (
                         <div className="absolute top-full left-0 mt-2 w-56 bg-surface-dark border border-white/10 rounded-lg shadow-2xl z-50 py-1 overflow-hidden glass">
@@ -60,7 +61,7 @@ export function Topbar() {
                 </div>
             </div>
 
-            <div className="flex items-center gap-4 flex-1 justify-center">
+            <div className="hidden md:flex items-center gap-4 flex-1 justify-center">
                 <div className="relative w-full max-w-md">
                     <Search className="absolute left-3 top-1.5 h-4 w-4 text-slate-400" />
                     <input
@@ -71,7 +72,10 @@ export function Topbar() {
                 </div>
             </div>
 
-            <div className="flex items-center gap-4 flex-1 justify-end">
+            <div className="flex items-center gap-2 md:gap-4 flex-1 justify-end">
+                <button className="md:hidden relative p-1.5 text-slate-400 hover:text-slate-100 transition-colors">
+                    <Search className="h-5 w-5" />
+                </button>
                 <button className="relative p-1.5 text-slate-400 hover:text-slate-100 transition-colors">
                     <Bell className="h-5 w-5" />
                     <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-accent-teal shadow-[0_0_8px_rgba(45,212,191,0.8)]"></span>

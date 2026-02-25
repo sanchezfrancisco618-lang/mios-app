@@ -16,11 +16,11 @@ export function ScheduleTable() {
                     <TableRow>
                         <TableHead className="w-10 text-center">R</TableHead>
                         <TableHead className="w-[300px] sticky left-0 bg-muted/95">Task Name</TableHead>
-                        <TableHead>Start</TableHead>
-                        <TableHead>Equip</TableHead>
-                        <TableHead>Proc. Status</TableHead>
-                        <TableHead>Controls</TableHead>
-                        <TableHead>Resp</TableHead>
+                        <TableHead className="hidden sm:table-cell">Start</TableHead>
+                        <TableHead className="hidden md:table-cell">Equip</TableHead>
+                        <TableHead className="hidden md:table-cell">Proc. Status</TableHead>
+                        <TableHead className="hidden lg:table-cell">Controls</TableHead>
+                        <TableHead className="hidden lg:table-cell">Resp</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -39,24 +39,24 @@ export function ScheduleTable() {
                                 <TableCell className="font-medium sticky left-0 bg-background border-r border-border truncate max-w-[300px]" title={t.task}>
                                     {t.task}
                                 </TableCell>
-                                <TableCell className="tabular-nums font-medium text-xs text-muted-foreground border-r border-border">{t.start}</TableCell>
-                                <TableCell>
+                                <TableCell className="tabular-nums font-medium text-xs text-muted-foreground border-r border-border hidden sm:table-cell">{t.start}</TableCell>
+                                <TableCell className="hidden md:table-cell">
                                     {t.equipmentTag ? (
                                         <button
                                             onClick={(e) => { e.stopPropagation(); const eq = useAppStore.getState().equipment.find(eq => eq.tag === t.equipmentTag); if (eq) openEquipment(eq.id); }}
-                                            className="px-2 py-0.5 rounded bg-muted/60 text-xs font-semibold hover:bg-primary/10 hover:text-primary transition-colors border border-border"
+                                            className="px-2 py-0.5 rounded bg-muted/60 text-[10px] md:text-xs font-semibold hover:bg-primary/10 hover:text-primary transition-colors border border-border"
                                         >
                                             {t.equipmentTag}
                                         </button>
                                     ) : <span className="text-muted-foreground">-</span>}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="hidden md:table-cell">
                                     {t.procurementStatus ? <Badge className={getStatusColor(t.procurementStatus)}>{t.procurementStatus}</Badge> : null}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="hidden lg:table-cell">
                                     {t.controlsFlag ? <Settings2 className="h-4 w-4 text-amber-600" /> : <span className="text-muted-foreground">-</span>}
                                 </TableCell>
-                                <TableCell className="text-xs font-medium text-muted-foreground">{t.responsible}</TableCell>
+                                <TableCell className="text-[10px] md:text-xs font-medium text-muted-foreground hidden lg:table-cell">{t.responsible}</TableCell>
                             </TableRow>
                         );
                     })}
