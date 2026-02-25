@@ -143,8 +143,10 @@ export function DocumentUploadPanel({ documentType, initialDocuments = [] }: Doc
             let endpoint = "";
             if (documentType === "submittals") {
                 endpoint = `/api/projects/${activeProjectId}/submittals/${selectedDoc.id}/parse`;
+            } else if (documentType === "drawings") {
+                endpoint = `/api/projects/${activeProjectId}/files/${selectedDoc.id}/parse`;
             } else {
-                // Future expansion for drawing/spec parsing
+                // Future expansion for spec parsing
                 alert(`AI Analysis for ${documentType} requires a specific module configuration. (Simulation mode for now)`);
                 setTimeout(() => {
                     setAnalysisResult({
@@ -305,6 +307,8 @@ export function DocumentUploadPanel({ documentType, initialDocuments = [] }: Doc
                                 <p className="font-bold mb-2">Analysis Results:</p>
                                 {analysisResult.message ? (
                                     <p>{analysisResult.message}</p>
+                                ) : analysisResult.extractedItems !== undefined ? (
+                                    <p>Successfully extracted {analysisResult.extractedItems} equipment items from the schedules. View the takeoff in the active Project schedule.</p>
                                 ) : (
                                     <p>Found {analysisResult.requirements?.length || 0} requirements and {analysisResult.deviations?.length || 0} deviations.</p>
                                 )}
