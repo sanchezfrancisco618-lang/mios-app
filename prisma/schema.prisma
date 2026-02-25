@@ -59,7 +59,7 @@ model FileAsset {
   uploadedAt    DateTime @default(now())
   sha256        String?
   extractionRows ExtractionRow[]
-  
+  drawingPages  DrawingPage[]
   // Try not to enforce strict DB level unique per sha256 since dev environments might upload same file multiple times with different names to test.
 }
 
@@ -344,4 +344,28 @@ model Risk {
   linkedSubmittalId String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+}
+
+// Phase 11 Drawing Engine (Bluebeam-style Calibration & Markups)
+model DrawingPage {
+  id          String   @id @default(cuid())
+  fileAssetId String
+  fileAsset   FileAsset @relation(fields: [fileAssetId], references: [id], onDelete: Cascade)
+  pageNumber  Int
+  scaleX      Float?   // The calibrated X-axis multiplier (e.g. 1 PDF point = 0.0416 feet)
+  scaleY      Float?   // The calibrated Y-axis multiplier (rare, but supported)
+  unit        String?  // 'ft', 'm', 'in'
+  precision   String?  // e.g. "0.01", "1/16", "1"
+  
+  markups     Markup[]
+}
+
+model Markup {
+  id            String   @id @default(cuid())
+  drawingPageId String  
+  drawingPage   DrawingPage @relation(fields: [drawingPageId], references: [id], onDelete: Cascade)
+  type          String   // 'LENGTH', 'AREA', 'TEXT', 'RECTANGLE'
+  geometry      String   // JSON array of [x,y] coordinates in absolute PDF space
+  color         String
+  strokeWidth   Int
 }

@@ -2,6 +2,7 @@
 
 import { useAppStore } from "@/lib/store";
 import { DocumentUploadPanel } from "@/components/shared/DocumentUploadPanel";
+import { ExportMenu } from "@/components/shared/ExportMenu";
 
 export default function RfisPage() {
     const { project } = useAppStore();
@@ -10,9 +11,12 @@ export default function RfisPage() {
 
     return (
         <div className="flex flex-col h-full w-full bg-background-dark p-6 space-y-6">
-            <div className="shrink-0">
-                <h1 className="text-2xl font-extrabold tracking-tight text-white mb-1">Requests for Information (RFIs)</h1>
-                <p className="text-sm text-slate-400">Manage, generate, and auto-verify design queries.</p>
+            <div className="shrink-0 flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-extrabold tracking-tight text-white mb-1">Requests for Information (RFIs)</h1>
+                    <p className="text-sm text-slate-400">Manage, generate, and auto-verify design queries.</p>
+                </div>
+                <ExportMenu dataName="RFIs Log" />
             </div>
             <div className="flex-1 overflow-hidden">
                 <DocumentUploadPanel documentType="rfis" />

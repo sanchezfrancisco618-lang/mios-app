@@ -18,3 +18,16 @@ export async function PATCH(request: Request, { params }: { params: { projectId:
         return NextResponse.json({ error: "Failed to update submittal" }, { status: 500 });
     }
 }
+
+export async function DELETE(request: Request, { params }: { params: { projectId: string; submittalId: string } }) {
+    try {
+        await prisma.submittal.delete({
+            where: { id: params.submittalId }
+        });
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error("Error deleting submittal:", error);
+        return NextResponse.json({ error: "Failed to delete submittal" }, { status: 500 });
+    }
+}

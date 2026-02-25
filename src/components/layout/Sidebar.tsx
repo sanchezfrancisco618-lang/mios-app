@@ -61,13 +61,18 @@ export function Sidebar() {
                 </ul>
             </nav>
             <div className="p-4 border-t border-white/10">
-                <div
-                    onClick={() => alert('Settings configuration coming soon!')}
-                    className="flex items-center gap-3 text-sm font-semibold text-slate-400 hover:text-slate-200 cursor-pointer px-3 py-2 rounded-lg hover:bg-white/5 transition-colors"
+                <Link
+                    href="/settings"
+                    className={cn(
+                        "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-all",
+                        pathname.startsWith("/settings")
+                            ? "bg-primary/20 text-primary border border-primary/30 shadow-[0_0_15px_rgba(37,89,244,0.15)]"
+                            : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
+                    )}
                 >
                     <Settings className="h-[18px] w-[18px] shrink-0" />
                     Settings
-                </div>
+                </Link>
             </div>
         </aside>
     );

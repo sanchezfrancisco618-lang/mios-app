@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useAppStore } from "@/lib/store";
 import { UploadCloud, FileImage, Search, Zap, ScanLine, Layers, CheckCircle2, ChevronLeft, ZoomIn, ZoomOut, Hand, MousePointer2, Type, Highlighter, Ruler, Hash, Square, Circle } from "lucide-react";
 import { DocumentUploadPanel } from "@/components/shared/DocumentUploadPanel";
+import { PdfViewerCanvas } from "@/components/shared/PdfViewerCanvas";
+import { ExportMenu } from "@/components/shared/ExportMenu";
 
 type TradeTab = "all" | "architectural" | "mechanical" | "plumbing" | "electrical";
 
@@ -18,8 +20,8 @@ interface Drawing {
 }
 
 export default function DrawingsPage() {
-    const { project } = useAppStore();
-    const [activeTrade, setActiveTrade] = useState<TradeTab>("mechanical");
+    const { project, files, activeProjectId } = useAppStore();
+    const [activeTrade, setActiveTrade] = useState<TradeTab>("all");
 
     // View State: "grid" | "viewer"
     const [viewMode, setViewMode] = useState<"grid" | "viewer">("grid");
@@ -34,13 +36,18 @@ export default function DrawingsPage() {
     const [aiState, setAiState] = useState<"idle" | "scanning" | "results">("idle");
     const [takeoffResults, setTakeoffResults] = useState<any>(null);
 
-    const drawings: Drawing[] = [
-        { id: "1", number: "M-101", title: "First Floor HVAC Plan", trade: "mechanical", rev: "Rev 2", date: "Nov 05, 2023", thumbnail: "/mock-thumb.jpg" },
-        { id: "2", number: "M-102", title: "Second Floor HVAC Plan", trade: "mechanical", rev: "Rev 0", date: "Oct 12, 2023", thumbnail: "/mock-thumb.jpg" },
-        { id: "3", number: "M-501", title: "Mechanical Details", trade: "mechanical", rev: "Rev 1", date: "Oct 22, 2023", thumbnail: "/mock-thumb.jpg" },
-        { id: "4", number: "P-101", title: "First Floor Plumbing Plan", trade: "plumbing", rev: "Rev 0", date: "Oct 12, 2023", thumbnail: "/mock-thumb.jpg" },
-        { id: "5", number: "A-101", title: "First Floor Architectural", trade: "architectural", rev: "Rev 3", date: "Nov 10, 2023", thumbnail: "/mock-thumb.jpg" },
-    ];
+    // Derive actual drawings from global store files
+    const drawings: Drawing[] = files
+        .filter(f => f.fileType === "PDF")
+        .map(f => ({
+            id: f.id,
+            number: f.filename.replace(/\.[^/.]+$/, ""),
+            title: f.filename,
+            trade: (f.discipline?.toLowerCase() || "mechanical") as TradeTab,
+            rev: f.revisionLabel || "Rev 0",
+            date: new Date(f.uploadedAt).toLocaleDateString(),
+            thumbnail: ""
+        }));
 
     const filteredDrawings = activeTrade === "all" ? drawings : drawings.filter(d => d.trade === activeTrade);
 
@@ -114,9 +121,12 @@ export default function DrawingsPage() {
                                 <h1 className="text-2xl font-extrabold tracking-tight text-white mb-1">Drawings Engine</h1>
                                 <p className="text-sm text-slate-400">Auto-organized PDF sets powered by Vision AI for instant quantity takeoff.</p>
                             </div>
-                            <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-bold rounded-lg shadow-[0_0_20px_rgba(37,89,244,0.3)] hover:bg-primary/90 transition-all">
-                                <UploadCloud className="h-4 w-4" /> Upload PDFs
-                            </button>
+                            <div className="flex items-center gap-3">
+                                <ExportMenu dataName="Drawings Log" />
+                                <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-bold rounded-lg shadow-[0_0_20px_rgba(37,89,244,0.3)] hover:bg-primary/90 transition-all">
+                                    <UploadCloud className="h-4 w-4" /> Upload PDFs
+                                </button>
+                            </div>
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-6">
@@ -210,36 +220,36 @@ export default function DrawingsPage() {
                             </div>
                         </div>
 
-                        {/* PDF Document Canvas Mock */}
-                        <div className="flex-1 bg-slate-900 overflow-auto flex items-center justify-center p-8"
-                            style={{ cursor: activeTool === 'pan' ? 'grab' : activeTool === 'count' ? 'crosshair' : 'default' }}
-                        >
-                            <div className="w-full max-w-5xl aspect-[1.29] bg-white rounded shadow-2xl relative flex items-center justify-center">
-                                {/* Simulated PDF Content */}
-                                <div className="absolute inset-0 border-4 border-slate-200 m-8"></div>
-                                <div className="text-slate-300 font-extrabold text-4xl opacity-20 rotate-[-45deg] select-none">
-                                    MOCK PDF VIEWER CANVAS
+                        {/* PDF Document Canvas Interactive View */}
+                        <div className="flex-1 bg-slate-900 overflow-hidden flex items-center justify-center relative">
+                            {selectedDrawing && activeProjectId && (
+                                <div className="absolute inset-0 overflow-auto">
+                                    <PdfViewerCanvas
+                                        fileUrl={`/api/storage/${activeProjectId}/${selectedDrawing.title}`}
+                                        activeTool={activeTool}
+                                        projectId={activeProjectId}
+                                        fileId={selectedDrawing.id}
+                                    />
                                 </div>
+                            )}
 
-                                {/* Manual Count Mock Pips (Visible only if counting tool was used) */}
-                                {activeTool === "count" && (
-                                    <>
-                                        <div className="absolute top-[35%] left-[45%] w-5 h-5 rounded-full bg-accent-teal border-2 border-white shadow-md flex items-center justify-center text-[10px] font-bold text-slate-900 pointer-events-none">1</div>
-                                        <div className="absolute top-[38%] left-[75%] w-5 h-5 rounded-full bg-accent-teal border-2 border-white shadow-md flex items-center justify-center text-[10px] font-bold text-slate-900 pointer-events-none">2</div>
-                                        <div className="absolute top-[65%] left-[55%] w-5 h-5 rounded-full bg-accent-teal border-2 border-white shadow-md flex items-center justify-center text-[10px] font-bold text-slate-900 pointer-events-none">3</div>
-                                    </>
-                                )}
+                            {/* Manual Count Mock Pips (Visible only if counting tool was used) */}
+                            {activeTool === "count" && (
+                                <div className="absolute inset-0 pointer-events-none z-30 opacity-50">
+                                    <div className="absolute top-[35%] left-[45%] w-5 h-5 rounded-full bg-accent-teal border-2 border-white shadow-md flex items-center justify-center text-[10px] font-bold text-slate-900 pointer-events-none">1</div>
+                                    <div className="absolute top-[38%] left-[75%] w-5 h-5 rounded-full bg-accent-teal border-2 border-white shadow-md flex items-center justify-center text-[10px] font-bold text-slate-900 pointer-events-none">2</div>
+                                    <div className="absolute top-[65%] left-[55%] w-5 h-5 rounded-full bg-accent-teal border-2 border-white shadow-md flex items-center justify-center text-[10px] font-bold text-slate-900 pointer-events-none">3</div>
+                                </div>
+                            )}
 
-                                {/* AI Bounding Boxes Mock (only visible if AI Tools active and scanned) */}
-                                {showAiTools && aiState === "results" && (
-                                    <>
-                                        <div className="absolute top-[20%] left-[30%] w-12 h-12 border-2 border-primary bg-primary/20 shadow-[0_0_15px_rgba(37,89,244,0.5)]"></div>
-                                        <div className="absolute top-[45%] left-[60%] w-12 h-12 border-2 border-primary bg-primary/20 shadow-[0_0_15px_rgba(37,89,244,0.5)]"></div>
-                                        <div className="absolute top-[70%] left-[25%] w-12 h-12 border-2 border-primary bg-primary/20 shadow-[0_0_15px_rgba(37,89,244,0.5)]"></div>
-                                        {/* ... simulated boxes */}
-                                    </>
-                                )}
-                            </div>
+                            {/* AI Bounding Boxes Mock (only visible if AI Tools active and scanned) */}
+                            {showAiTools && aiState === "results" && (
+                                <div className="absolute inset-0 pointer-events-none z-30 opacity-60">
+                                    <div className="absolute top-[20%] left-[30%] w-12 h-12 border-2 border-primary bg-primary/20 shadow-[0_0_15px_rgba(37,89,244,0.5)]"></div>
+                                    <div className="absolute top-[45%] left-[60%] w-12 h-12 border-2 border-primary bg-primary/20 shadow-[0_0_15px_rgba(37,89,244,0.5)]"></div>
+                                    <div className="absolute top-[70%] left-[25%] w-12 h-12 border-2 border-primary bg-primary/20 shadow-[0_0_15px_rgba(37,89,244,0.5)]"></div>
+                                </div>
+                            )}
                         </div>
                     </div>
 

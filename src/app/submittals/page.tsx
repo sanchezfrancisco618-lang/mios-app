@@ -6,8 +6,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getStatusColor } from "@/lib/utils";
-import { FileSearch, CheckCircle2, AlertTriangle, X, Plus } from "lucide-react";
+import { FileSearch, CheckCircle2, AlertTriangle, X, Plus, Trash2 } from "lucide-react";
 import { DocumentUploadPanel } from "@/components/shared/DocumentUploadPanel";
+import { ExportMenu } from "@/components/shared/ExportMenu";
 
 export default function SubmittalsPage() {
     const { activeProjectId, initData, submittals, openEquipment, equipment } = useAppStore();
@@ -43,6 +44,23 @@ export default function SubmittalsPage() {
         initData();
     };
 
+    const handleDeleteSubmittal = async (submittalId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!activeProjectId) return;
+        if (!confirm("Are you sure you want to delete this submittal?")) return;
+
+        try {
+            const res = await fetch(`/api/projects/${activeProjectId}/submittals/${submittalId}`, { method: 'DELETE' });
+            if (res.ok) {
+                initData();
+            } else {
+                alert("Failed to delete submittal");
+            }
+        } catch (error) {
+            console.error("Failed to delete submittal", error);
+        }
+    };
+
     const runAnalysis = async (submittalId: string) => {
         setAnalyzingId(submittalId);
         try {
@@ -60,9 +78,12 @@ export default function SubmittalsPage() {
         <div className="p-6 space-y-6 h-full flex flex-col">
             <div className="flex justify-between items-center shrink-0">
                 <h1 className="text-2xl font-bold tracking-tight">Submittals Log</h1>
-                <Button onClick={handleCreateSubmittal} className="bg-primary hover:bg-primary/90 text-white font-bold h-9 px-4 gap-2 border-primary shadow-[0_0_15px_rgba(37,89,244,0.3)]">
-                    <Plus className="h-4 w-4" /> Create Submittal
-                </Button>
+                <div className="flex items-center gap-3">
+                    <ExportMenu dataName="Submittals List" />
+                    <Button onClick={handleCreateSubmittal} className="bg-primary hover:bg-primary/90 text-white font-bold h-9 px-4 gap-2 border-primary shadow-[0_0_15px_rgba(37,89,244,0.3)]">
+                        <Plus className="h-4 w-4" /> Create Submittal
+                    </Button>
+                </div>
             </div>
 
             <div className="flex-1 bg-background rounded-lg border border-border shadow-sm overflow-hidden flex flex-col">
@@ -128,15 +149,26 @@ export default function SubmittalsPage() {
                                             ) : <span className="text-muted-foreground">-</span>}
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Button
-                                                variant="outline"
-                                                onClick={() => runAnalysis(sub.id)}
-                                                disabled={analyzingId === sub.id}
-                                                className="gap-2 h-9 px-3 text-xs"
-                                            >
-                                                <FileSearch className="h-4 w-4" />
-                                                {analyzingId === sub.id ? "Analyzing..." : "Review Compliance"}
-                                            </Button>
+                                            <div className="flex items-center justify-end gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => runAnalysis(sub.id)}
+                                                    disabled={analyzingId === sub.id}
+                                                    className="gap-2 h-9 px-3 text-xs"
+                                                >
+                                                    <FileSearch className="h-4 w-4" />
+                                                    {analyzingId === sub.id ? "Analyzing..." : "Review Compliance"}
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={(e) => handleDeleteSubmittal(sub.id, e)}
+                                                    className="h-9 w-9 text-slate-400 hover:text-red-400 hover:bg-red-400/10"
+                                                    title="Delete Submittal"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 )

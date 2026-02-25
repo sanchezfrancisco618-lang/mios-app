@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import type { Project, Equipment, Submittal, ScheduleTask, Inspection, Risk, ExtractedEquipment } from './types';
-import { MOCK_SUBMITTALS, MOCK_SCHEDULE_TASKS, MOCK_INSPECTIONS } from './mock';
 import { auth } from './firebase/config';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, User } from 'firebase/auth';
 
@@ -17,6 +16,7 @@ interface AppState {
     scheduleTasks: ScheduleTask[];
     inspections: Inspection[];
     risks: Risk[];
+    files: any[];
     commitConflicts: any[];
 
     // UI State
@@ -64,10 +64,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     equipment: [],
     extractedEquipment: [],
     currentRunId: null,
-    submittals: MOCK_SUBMITTALS,
-    scheduleTasks: MOCK_SCHEDULE_TASKS,
-    inspections: MOCK_INSPECTIONS,
+    submittals: [],
+    scheduleTasks: [],
+    inspections: [],
     risks: [],
+    files: [],
     commitConflicts: [],
 
     drawerOpen: false,
@@ -171,6 +172,10 @@ export const useAppStore = create<AppState>((set, get) => ({
         const subRes = await fetch(`/api/projects/${projectId}/submittals`);
         const subDb = await subRes.json();
 
+        // Fetch Files
+        const filesRes = await fetch(`/api/projects/${projectId}/files`);
+        const filesDb = await filesRes.json();
+
         set({
             project,
             equipment: equipmentDb.map((e: any) => ({
@@ -188,7 +193,8 @@ export const useAppStore = create<AppState>((set, get) => ({
                 }, linkedIds: { submittals: [], scheduleTasks: [], inspections: [], risks: [] } // Mock links since Phase 2 doesn't have complete cross-table joins yet
             })),
             risks,
-            submittals: subDb
+            submittals: subDb,
+            files: filesDb
         });
     },
 

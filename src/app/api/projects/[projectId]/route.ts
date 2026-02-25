@@ -51,3 +51,24 @@ export async function GET(req: Request, { params }: { params: { projectId: strin
         }
     });
 }
+
+export async function PATCH(req: Request, { params }: { params: { projectId: string } }) {
+    try {
+        const body = await req.json();
+        const { name, ahj, mode } = body;
+
+        const updated = await prisma.project.update({
+            where: { id: params.projectId },
+            data: {
+                ...(name && { name }),
+                ...(ahj && { ahj }),
+                ...(mode && { mode })
+            }
+        });
+
+        return NextResponse.json(updated);
+    } catch (error) {
+        console.error("Failed to update project settings:", error);
+        return NextResponse.json({ error: "Failed to update settings" }, { status: 500 });
+    }
+}
